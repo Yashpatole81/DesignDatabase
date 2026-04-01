@@ -79,7 +79,6 @@ def generate_fallback_schema(user_prompt: str) -> SchemaDesign:
 async def generate_schema(payload: GenerateSchemaRequest):
     # Simplify prompt - only send user request, not full current schema
     prompt = f"""
-<<<<<<< HEAD
 User wants: {payload.prompt}
 
 Output JSON with tables, columns, relationships.
@@ -87,21 +86,6 @@ Use "PK" for primary key, "FK" for foreign key, "UNIQUE" for unique, "NONE" for 
 
 Format:
 {{"tables":[{{"id":"1","name":"tablename","columns":[{{"id":"col1","name":"colname","type":"VARCHAR(50)","key":"PK"}}],"position":{{"x":100,"y":100}}}}],"relationships":[{{"id":"rel1","sourceTableId":"1","targetTableId":"2","sourceColumnId":"col1","targetColumnId":"col2"}}],"explanation":"Created schema"}}
-=======
-Current schema:
-{current_schema_str}
-
-User: "{payload.prompt}"
-
-Generate database schema. For 'key' field use: "PK", "FK", "UNIQUE", or "NONE" (not empty string).
-
-Return JSON:
-{{
-    "tables": [{{"id": "str", "name": "str", "columns": [{{"id": "str", "name": "str", "type": "str", "key": "NONE"}}], "position": {{"x": 0, "y": 0}}}}],
-    "relationships": [],
-    "explanation": "Brief explanation"
-}}
->>>>>>> a463491a0e31a80eefcdf3f7b956c561848067dd
 """
     try:
         raw_json = await generate_completion(prompt)
@@ -142,13 +126,6 @@ Return JSON:
             explanation=explanation,
             warnings=val_result["warnings"] + val_result["errors"]
         )
-<<<<<<< HEAD
-=======
-    except json.JSONDecodeError as jde:
-        logger.error(f"LLM returned invalid JSON: {str(jde)}")
-        logger.error(f"Offending content: {raw_json!r}")
-        raise HTTPException(status_code=500, detail=f"LLM did not return valid JSON. Error: {str(jde)}")
->>>>>>> a463491a0e31a80eefcdf3f7b956c561848067dd
     except Exception as e:
         logger.error(f"Processing failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Processing failed: {str(e)}")
