@@ -7,9 +7,16 @@ logger = logging.getLogger(__name__)
 
 async def generate_completion(prompt: str) -> str:
     system_prompt = (
+<<<<<<< HEAD
         "You are a database schema generator. Respond ONLY with valid JSON.\n"
         "DO NOT think or explain your reasoning. Output JSON immediately.\n"
         "DO NOT use <think> tags or markdown code blocks."
+=======
+        "You are QueryNest AI Database Architect.\n"
+        "You MUST respond STRICTLY in raw valid JSON exactly matching the requested shape.\n"
+        "Do NOT include markdown formatting wrappers like ```json at the start or end.\n"
+        "Be concise and respond quickly."
+>>>>>>> a463491a0e31a80eefcdf3f7b956c561848067dd
     )
     
     payload = {
@@ -18,9 +25,14 @@ async def generate_completion(prompt: str) -> str:
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": prompt}
         ],
+<<<<<<< HEAD
         "temperature": 0.1,
         "max_tokens": 3000,
         "top_p": 0.9
+=======
+        "temperature": 0.2,
+        "max_tokens": 2000
+>>>>>>> a463491a0e31a80eefcdf3f7b956c561848067dd
     }
     
     logger.info(f"Calling LLM API: {settings.LLM_API_URL}")
@@ -28,7 +40,11 @@ async def generate_completion(prompt: str) -> str:
     
     content = ""
     try:
+<<<<<<< HEAD
         async with httpx.AsyncClient(timeout=180.0) as client:
+=======
+        async with httpx.AsyncClient(timeout=120.0) as client:
+>>>>>>> a463491a0e31a80eefcdf3f7b956c561848067dd
             response = await client.post(
                 settings.LLM_API_URL, 
                 json=payload
@@ -39,11 +55,16 @@ async def generate_completion(prompt: str) -> str:
             
             if "choices" in data and len(data["choices"]) > 0:
                 content = data["choices"][0]["message"]["content"]
+<<<<<<< HEAD
                 logger.debug(f"Raw LLM response content: {content[:500]}...")
+=======
+                logger.debug(f"Raw LLM response content: {content!r}")
+>>>>>>> a463491a0e31a80eefcdf3f7b956c561848067dd
             else:
                 logger.error(f"Unexpected LLM response structure: {data}")
                 raise ValueError(f"Unexpected LLM response format: {data}")
 
+<<<<<<< HEAD
             # Strip Qwen3 <think>...</think> reasoning blocks (handle incomplete closing tags)
             if "<think>" in content:
                 # Find the end of think block or start of JSON
@@ -60,6 +81,10 @@ async def generate_completion(prompt: str) -> str:
                     else:
                         content = ""
                 content = content.strip()
+=======
+            # Strip Qwen3 <think>...</think> reasoning blocks
+            content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL).strip()
+>>>>>>> a463491a0e31a80eefcdf3f7b956c561848067dd
 
             # Strip markdown code fences
             if content.startswith("```json"):
@@ -71,7 +96,11 @@ async def generate_completion(prompt: str) -> str:
                 if content.endswith("```"):
                     content = content[:-3].strip()
 
+<<<<<<< HEAD
             logger.debug(f"Cleaned LLM content: {content[:200]}...")
+=======
+            logger.debug(f"Cleaned LLM content: {content!r}")
+>>>>>>> a463491a0e31a80eefcdf3f7b956c561848067dd
 
             if not content:
                 logger.error("LLM returned empty content after cleaning")
@@ -79,9 +108,14 @@ async def generate_completion(prompt: str) -> str:
 
         return content
     except httpx.ReadTimeout:
+<<<<<<< HEAD
         logger.error(f"LLM API timeout after 180s. Model: {settings.MODEL_NAME}")
         logger.error(f"This may indicate the model is overloaded or thinking mode is enabled.")
         raise ValueError("LLM API request timed out. Try again or check model availability.")
+=======
+        logger.error(f"LLM API timeout after 120s")
+        raise ValueError("LLM API request timed out. The model may be overloaded.")
+>>>>>>> a463491a0e31a80eefcdf3f7b956c561848067dd
     except httpx.HTTPError as e:
         logger.error(f"HTTP error calling LLM API: {str(e)}")
         raise

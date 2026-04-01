@@ -12,6 +12,7 @@ class ColumnDef(BaseModel):
     def normalize_key(cls, v):
         if v == "" or v is None:
             return "NONE"
+<<<<<<< HEAD
         # Map common variations to expected values
         key_map = {
             "PRIMARY": "PK",
@@ -20,6 +21,9 @@ class ColumnDef(BaseModel):
             "FOREIGN KEY": "FK",
         }
         return key_map.get(v.upper() if isinstance(v, str) else v, v)
+=======
+        return v
+>>>>>>> a463491a0e31a80eefcdf3f7b956c561848067dd
 
 class PositionDef(BaseModel):
     x: float
