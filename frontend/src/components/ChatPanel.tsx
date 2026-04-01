@@ -36,7 +36,7 @@ export function ChatPanel() {
     // Real API Call
     const currentSchema = useSchemaStore.getState();
     
-    fetch("http://localhost:8000/api/v1/ai/generate-schema", {
+    fetch(`${import.meta.env.VITE_API_URL}/api/v1/ai/generate-schema`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
