@@ -8,7 +8,7 @@ import { useSchemaStore } from "@/store/useSchemaStore";
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, requiresProject: false },
   { name: "Schema Builder", href: "/builder", icon: Network, requiresProject: true },
-  { name: "ER Diagram", href: "/review", icon: Activity, requiresProject: true },
+  { name: "Review", href: "/review", icon: Activity, requiresProject: true },
 ];
 
 export function Sidebar() {

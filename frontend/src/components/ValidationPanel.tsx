@@ -1,6 +1,8 @@
-import { AlertCircle, ArrowRight, ServerCrash, Zap } from "lucide-react";
+import { AlertCircle, CheckCircle2, Zap, ArrowRight } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useSchemaStore } from "@/store/useSchemaStore";
+import { useMemo } from "react";
 
 interface ValidationPanelProps {
   isOpen: boolean;
@@ -8,78 +10,121 @@ interface ValidationPanelProps {
 }
 
 export function ValidationPanel({ isOpen, onClose }: ValidationPanelProps) {
-  // Mock validation data
-  const errors = [
-    { message: "Table 'orders' is missing a primary key", type: "error" },
-    { message: "Foreign key in 'order_items' references non-existent table 'products'", type: "error" }
-  ];
+  const { tables, relationships, aiOutput } = useSchemaStore();
 
-  const suggestions = [
-    { message: "Consider adding an index to 'user_id' in 'orders'", type: "warning" },
-    { message: "Table 'user_profiles' could be merged with 'users' for better performance", type: "info" }
-  ];
+  const { errors, warnings } = useMemo(() => {
+    const errors: string[] = [];
+    const warnings: string[] = [];
+
+    if (tables.length === 0) {
+      errors.push("Schema is empty. Add at least one table.");
+      return { errors, warnings };
+    }
+
+    const tableIds = new Set(tables.map(t => t.id));
+
+    tables.forEach(table => {
+      const hasPK = table.columns.some(c => c.key === "PK");
+      if (!hasPK) errors.push(`Table '${table.name}' is missing a primary key.`);
+      if (table.columns.length === 0) errors.push(`Table '${table.name}' has no columns.`);
+
+      const colNames = table.columns.map(c => c.name.toLowerCase());
+      const dupes = colNames.filter((n, i) => colNames.indexOf(n) !== i);
+      if (dupes.length > 0) errors.push(`Table '${table.name}' has duplicate column: '${dupes[0]}'.`);
+
+      if (table.columns.length === 1) warnings.push(`Table '${table.name}' has only one column.`);
+    });
+
+    relationships.forEach(rel => {
+      if (!tableIds.has(rel.sourceTableId)) errors.push(`Relationship references missing source table.`);
+      if (!tableIds.has(rel.targetTableId)) errors.push(`Relationship references missing target table.`);
+    });
+
+    // Append backend warnings from AI output
+    if (aiOutput?.warnings) {
+      aiOutput.warnings.forEach(w => warnings.push(w));
+    }
+
+    return { errors, warnings };
+  }, [tables, relationships, aiOutput]);
+
+  const isValid = errors.length === 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-destructive">
-            <ServerCrash className="w-5 h-5" />
-            Schema Validation Issues
+          <DialogTitle className={`flex items-center gap-2 ${isValid ? "text-green-600" : "text-destructive"}`}>
+            {isValid
+              ? <><CheckCircle2 className="w-5 h-5" /> Schema is Valid</>
+              : <><AlertCircle className="w-5 h-5" /> Schema Validation Issues</>
+            }
           </DialogTitle>
           <DialogDescription>
-            We detected a few potential structural problems with your database schema.
+            {isValid
+              ? `All ${tables.length} tables passed validation.`
+              : "Fix the issues below before proceeding."}
           </DialogDescription>
         </DialogHeader>
 
         <div className="py-4 space-y-6">
-          {/* Errors List */}
-          <div className="space-y-3">
-            <h4 className="font-semibold text-sm flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-destructive" />
-              Critical Errors ({errors.length})
-            </h4>
-            <div className="space-y-2">
-              {errors.map((err, i) => (
-                <div key={i} className="bg-destructive/10 text-destructive text-sm px-3 py-2 rounded-md flex gap-2 items-start">
-                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                  <p>{err.message}</p>
-                </div>
-              ))}
+          {errors.length > 0 && (
+            <div className="space-y-3">
+              <h4 className="font-semibold text-sm flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-destructive" />
+                Critical Errors ({errors.length})
+              </h4>
+              <div className="space-y-2">
+                {errors.map((err, i) => (
+                  <div key={i} className="bg-destructive/10 text-destructive text-sm px-3 py-2 rounded-md flex gap-2 items-start">
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <p>{err}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Suggestions List */}
-          <div className="space-y-3">
-            <h4 className="font-semibold text-sm flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-yellow-500" />
-              Suggestions & Warnings ({suggestions.length})
-            </h4>
-            <div className="space-y-2">
-              {suggestions.map((sug, i) => (
-                <div key={i} className="bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 text-sm px-3 py-2 rounded-md">
-                  <p>{sug.message}</p>
-                </div>
-              ))}
+          {warnings.length > 0 && (
+            <div className="space-y-3">
+              <h4 className="font-semibold text-sm flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-yellow-500" />
+                Warnings ({warnings.length})
+              </h4>
+              <div className="space-y-2">
+                {warnings.map((w, i) => (
+                  <div key={i} className="bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 text-sm px-3 py-2 rounded-md">
+                    <p>{w}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
+
+          {isValid && warnings.length === 0 && (
+            <div className="text-center text-sm text-muted-foreground py-4">
+              No issues found. Your schema looks great!
+            </div>
+          )}
         </div>
 
-        <div className="bg-muted p-4 rounded-xl flex items-center justify-between border mt-2">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-              <Zap className="w-5 h-5 text-primary" />
+        {!isValid && (
+          <div className="bg-muted p-4 rounded-xl flex items-center justify-between border mt-2">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <Zap className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-semibold text-sm">Let AI Fix This</p>
+                <p className="text-xs text-muted-foreground">Use the AI Assistant to resolve schema errors.</p>
+              </div>
             </div>
-            <div>
-              <p className="font-semibold text-sm">Let AI Fix This</p>
-              <p className="text-xs text-muted-foreground">Automatically resolve schema errors.</p>
-            </div>
+            <Button size="sm" className="gap-2 shrink-0 pr-2" onClick={onClose}>
+              Open AI
+              <ArrowRight className="w-4 h-4" />
+            </Button>
           </div>
-          <Button size="sm" className="gap-2 shrink-0 pr-2">
-            Auto-Fix
-            <ArrowRight className="w-4 h-4" />
-          </Button>
-        </div>
+        )}
       </DialogContent>
     </Dialog>
   );

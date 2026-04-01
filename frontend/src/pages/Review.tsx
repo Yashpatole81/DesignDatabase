@@ -67,7 +67,7 @@ export default function Review() {
         <div className="w-[45%] flex flex-col bg-card h-full">
           <div className="p-4 border-b">
             <h2 className="font-semibold text-lg flex items-center gap-2">
-              Generated SQL
+              Generated Query
             </h2>
           </div>
           <div className="h-1/2 border-b">

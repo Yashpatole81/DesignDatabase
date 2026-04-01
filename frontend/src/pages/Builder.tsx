@@ -14,7 +14,19 @@ export default function Builder() {
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true);
   const [editingTableId, setEditingTableId] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { tables } = useSchemaStore();
+  const { tables, updateTablePosition } = useSchemaStore();
+
+  const handleAutoLayout = () => {
+    const COLS = 3;
+    const X_GAP = 320;
+    const Y_GAP = 280;
+    tables.forEach((table, i) => {
+      updateTablePosition(table.id, {
+        x: (i % COLS) * X_GAP + 50,
+        y: Math.floor(i / COLS) * Y_GAP + 50,
+      });
+    });
+  };
 
   const handleNewTable = () => {
     setEditingTableId(null);
@@ -92,7 +104,7 @@ export default function Builder() {
               <Plus className="w-4 h-4" />
               Add Table
             </Button>
-            <Button variant="outline" size="sm" className="gap-2 bg-background shadow-sm">
+            <Button variant="outline" size="sm" className="gap-2 bg-background shadow-sm" onClick={handleAutoLayout}>
               <Wand2 className="w-4 h-4" />
               Auto Layout
             </Button>
