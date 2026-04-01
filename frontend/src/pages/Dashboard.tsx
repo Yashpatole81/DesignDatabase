@@ -61,8 +61,21 @@ export default function Dashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-24 rounded-md bg-muted/50 border border-dashed flex items-center justify-center text-muted-foreground/50 group-hover:bg-muted/80 transition-colors">
-                Visual Preview
+              <div className="h-24 rounded-md bg-muted/50 border border-dashed overflow-hidden relative p-2">
+                {project.tables.length === 0 ? (
+                  <div className="flex items-center justify-center h-full text-muted-foreground/50 text-xs">No tables yet</div>
+                ) : (
+                  <div className="flex flex-wrap gap-1 overflow-hidden">
+                    {project.tables.slice(0, 6).map(t => (
+                      <div key={t.id} className="bg-primary/10 border border-primary/20 rounded px-2 py-1 text-xs font-medium text-primary truncate max-w-[80px]">
+                        {t.name}
+                      </div>
+                    ))}
+                    {project.tables.length > 6 && (
+                      <div className="text-xs text-muted-foreground self-center">+{project.tables.length - 6} more</div>
+                    )}
+                  </div>
+                )}
               </div>
             </CardContent>
             <CardFooter>
