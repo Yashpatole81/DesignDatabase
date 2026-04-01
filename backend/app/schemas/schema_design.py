@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional, Literal
 
 class ColumnDef(BaseModel):
@@ -6,6 +6,13 @@ class ColumnDef(BaseModel):
     name: str
     type: str
     key: Optional[Literal["PK", "FK", "UNIQUE", "NONE"]] = "NONE"
+
+    @field_validator('key', mode='before')
+    @classmethod
+    def normalize_key(cls, v):
+        if v == "" or v is None:
+            return "NONE"
+        return v
 
 class PositionDef(BaseModel):
     x: float

@@ -15,23 +15,18 @@ router = APIRouter()
 async def generate_schema(payload: GenerateSchemaRequest):
     current_schema_str = payload.schema_design.model_dump_json(indent=2)
     prompt = f"""
-Current database schema:
+Current schema:
 {current_schema_str}
 
-User request: "{payload.prompt}"
+User: "{payload.prompt}"
 
-You are an AI Database Architect. 
-If the user's request is a greeting or general conversational message (e.g., "hi", "how are you?"), respond politely in the 'explanation' field and keep the 'tables' and 'relationships' arrays as they are (or empty if creating from scratch).
+Generate database schema. For 'key' field use: "PK", "FK", "UNIQUE", or "NONE" (not empty string).
 
-If the user is asking for schema changes:
-1. Modify or expand the table schema.
-2. Provide a brief, natural explanation of the changes in the 'explanation' field.
-
-Return ONLY JSON matching this format:
+Return JSON:
 {{
-    "tables": [{{ "id": "str", "name": "str", "columns": [{{ "id": "str", "name": "str", "type": "str", "key": "PK" }}], "position": {{ "x": 0, "y": 0 }} }}],
-    "relationships": [{{ "id": "str", "sourceTableId": "str", "targetTableId": "str", "sourceColumnId": "str", "targetColumnId": "str" }}],
-    "explanation": "Your natural language response here"
+    "tables": [{{"id": "str", "name": "str", "columns": [{{"id": "str", "name": "str", "type": "str", "key": "NONE"}}], "position": {{"x": 0, "y": 0}}}}],
+    "relationships": [],
+    "explanation": "Brief explanation"
 }}
 """
     try:
@@ -61,6 +56,7 @@ Return ONLY JSON matching this format:
         )
     except json.JSONDecodeError as jde:
         logger.error(f"LLM returned invalid JSON: {str(jde)}")
+        logger.error(f"Offending content: {raw_json!r}")
         raise HTTPException(status_code=500, detail=f"LLM did not return valid JSON. Error: {str(jde)}")
     except Exception as e:
         logger.error(f"Schema generation failed: {str(e)}")

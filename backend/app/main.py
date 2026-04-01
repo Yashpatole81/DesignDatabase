@@ -4,10 +4,7 @@ from app.core.config import settings
 from app.api.endpoints import projects, execute, ai
 import logging
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
@@ -25,25 +22,16 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_event():
-    mode = "Schema-Only Mode (No DB Execution)" if settings.SCHEMA_ONLY_MODE else "Full Mode (DB Execution Enabled)"
-    logger.info(f"🚀 {settings.PROJECT_NAME} starting in {mode}")
+    logger.info(f"🚀 {settings.PROJECT_NAME} starting in Schema-Only Mode")
     logger.info(f"📊 LLM Model: {settings.MODEL_NAME}")
-    logger.info(f"🔧 API Version: {settings.API_V1_STR}")
 
 @app.get("/")
 def root():
-    return {
-        "message": "Welcome to QueryNest API",
-        "mode": "schema-only" if settings.SCHEMA_ONLY_MODE else "full",
-        "schemaOnlyMode": settings.SCHEMA_ONLY_MODE
-    }
+    return {"message": "Welcome to QueryNest API", "mode": "schema-only"}
 
 @app.get("/health")
 def health_check():
-    return {
-        "status": "ok",
-        "schemaOnlyMode": settings.SCHEMA_ONLY_MODE
-    }
+    return {"status": "ok", "schemaOnlyMode": True}
 
 app.include_router(projects.router, prefix=f"{settings.API_V1_STR}/projects", tags=["projects"])
 app.include_router(execute.router, prefix=f"{settings.API_V1_STR}/execute", tags=["execute"])
