@@ -43,6 +43,7 @@ export type Project = {
   relationships: Relationship[];
   aiOutput: AIOutput | null;
   messages: Message[];
+  isTyping: boolean;
 };
 
 const INITIAL_MESSAGE: Message = {
@@ -86,6 +87,7 @@ function syncActiveProject(projects: Project[], activeProjectId: string | null) 
     relationships: active?.relationships ?? [],
     aiOutput: active?.aiOutput ?? null,
     messages: active?.messages ?? [INITIAL_MESSAGE],
+    isTyping: active?.isTyping ?? false,
   };
 }
 
@@ -95,7 +97,7 @@ function updateProject(projects: Project[], id: string, patch: Partial<Project>)
 
 export const useSchemaStore = create<SchemaState>((set) => ({
   projects: [
-    { id: "1", name: "E-Commerce Start", dbType: "PostgreSQL", lastModified: new Date().toISOString(), tables: [], relationships: [], aiOutput: null, messages: [INITIAL_MESSAGE] }
+    { id: "1", name: "E-Commerce Start", dbType: "PostgreSQL", lastModified: new Date().toISOString(), tables: [], relationships: [], aiOutput: null, messages: [INITIAL_MESSAGE], isTyping: false }
   ],
   activeProjectId: null,
   tables: [],
@@ -114,6 +116,7 @@ export const useSchemaStore = create<SchemaState>((set) => ({
       relationships: [],
       aiOutput: null,
       messages: [INITIAL_MESSAGE],
+      isTyping: false,
     };
     return { projects: [...state.projects, newProject] };
   }),
@@ -191,5 +194,9 @@ export const useSchemaStore = create<SchemaState>((set) => ({
     return { messages, projects };
   }),
 
-  setIsTyping: (val) => set({ isTyping: val }),
+  setIsTyping: (val) => set((state) => {
+    if (!state.activeProjectId) return {};
+    const projects = updateProject(state.projects, state.activeProjectId, { isTyping: val });
+    return { isTyping: val, projects };
+  }),
 }));
