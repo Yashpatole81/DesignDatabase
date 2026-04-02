@@ -77,9 +77,15 @@ def generate_fallback_schema(user_prompt: str) -> SchemaDesign:
 
 @router.post("/generate-schema", response_model=AIOutputResponse)
 async def generate_schema(payload: GenerateSchemaRequest):
-    # Simplify prompt - only send user request, not full current schema
+    # Build context from existing schema
+    existing_context = ""
+    if payload.schema_design.tables:
+        table_names = [t.name for t in payload.schema_design.tables]
+        existing_context = f"\n\nCurrent schema has these tables: {', '.join(table_names)}\nIMPORTANT: Include ALL existing tables in your response, plus any new tables needed for the user's request."
+    
+    # Simplify prompt - include current schema context
     prompt = f"""
-User wants: {payload.prompt}
+User wants: {payload.prompt}{existing_context}
 
 Output JSON with tables, columns, relationships.
 Use "PK" for primary key, "FK" for foreign key, "UNIQUE" for unique, "NONE" for no constraint.
