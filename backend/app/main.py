@@ -27,7 +27,7 @@ async def startup_event():
 
 @app.get("/")
 def root():
-    return {"message": "Welcome to QueryNest API", "mode": "schema-only"}
+    return {"message": "Welcome to DesignDatabase API", "mode": "schema-only"}
 
 @app.get("/health")
 def health_check():
