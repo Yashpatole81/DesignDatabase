@@ -1,5 +1,6 @@
 import { useSchemaStore } from "@/store/useSchemaStore";
 import { User } from "lucide-react";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function Navbar() {
   const { activeProjectId, projects } = useSchemaStore();
@@ -21,6 +22,7 @@ export function Navbar() {
       </div>
 
       <div className="flex items-center gap-3">
+        <ThemeToggle />
         <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center border">
           <User className="w-4 h-4 text-muted-foreground" />
         </div>
