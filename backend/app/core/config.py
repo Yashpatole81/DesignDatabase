@@ -5,7 +5,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 ENV_FILE = BASE_DIR / ".env"
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "QueryNest - AI Database Architect"
+    PROJECT_NAME: str = "DesignDatabase - AI Database Architect"
     API_V1_STR: str = "/api/v1"
 
     LLM_API_URL: str = "http://wiphackxlw49hx.cloudloka.com:8000/v1/chat/completions"

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { CheckCircle, Database, Sparkles, Code2 } from "lucide-react";
+import { CheckCircle, Database, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSchemaStore } from "@/store/useSchemaStore";
 
@@ -49,18 +49,12 @@ export default function Result() {
 
         <div className="pt-6 border-t flex flex-col gap-4">
           <h3 className="font-medium text-foreground">Suggested Next Steps</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <Button variant="outline" className="h-auto py-4 px-4 flex flex-col items-center gap-2 border-border/60 hover:border-primary/50 hover:bg-primary/5 group" onClick={() => navigate("/dashboard")}>
-              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                <Database className="w-4 h-4 text-foreground group-hover:text-primary" />
+          <div className="grid grid-cols-1 gap-4">
+            <Button disabled variant="outline" className="h-auto py-4 px-4 flex flex-col items-center gap-2 border-border/60 cursor-not-allowed opacity-60">
+              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                <Database className="w-4 h-4 text-foreground" />
               </div>
-              <span className="font-medium">Go to Dashboard</span>
-            </Button>
-            <Button variant="outline" className="h-auto py-4 px-4 flex flex-col items-center gap-2 border-border/60 hover:border-primary/50 hover:bg-primary/5 group">
-              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                <Code2 className="w-4 h-4 text-foreground group-hover:text-primary" />
-              </div>
-              <span className="font-medium">Export raw SQL</span>
+              <span className="font-medium">Go to Dashboard <span className="text-muted-foreground text-sm">(Under Development)</span></span>
             </Button>
           </div>
           

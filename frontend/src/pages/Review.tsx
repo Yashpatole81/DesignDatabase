@@ -1,13 +1,15 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Check, Sparkles, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Check, Sparkles, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSchemaStore } from "@/store/useSchemaStore";
 import Editor from "@monaco-editor/react";
 import SchemaCanvas from "../components/SchemaCanvas";
+import { useState } from "react";
 
 export default function Review() {
   const navigate = useNavigate();
   const { aiOutput } = useSchemaStore();
+  const [isExplanationMinimized, setIsExplanationMinimized] = useState(false);
 
   const sql = aiOutput?.sql || "-- No SQL available yet.\n-- Use the AI Assistant to generate a schema.";
   const projectName = useSchemaStore.getState().projects.find(p => p.id === useSchemaStore.getState().activeProjectId)?.name || "schema";
@@ -70,7 +72,7 @@ export default function Review() {
               Generated Query
             </h2>
           </div>
-          <div className="h-1/2 border-b">
+          <div className={`border-b transition-all ${isExplanationMinimized ? 'flex-1' : 'h-1/2'}`}>
             <Editor
               height="100%"
               defaultLanguage="sql"
@@ -86,25 +88,35 @@ export default function Review() {
             />
           </div>
           
-          <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-muted/10">
-            <div>
-              <h3 className="font-semibold text-lg mb-2">AI Explanation</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {aiOutput?.explanation || "No explanation provided. Try using the AI Assistant in the Schema Builder to generate an explanation alongside your schema."}
-              </p>
+          <div className={`overflow-hidden bg-muted/10 transition-all flex flex-col ${isExplanationMinimized ? 'h-auto' : 'flex-1'}`}>
+            <div className="p-4 border-b bg-card flex items-center justify-between cursor-pointer hover:bg-muted/20 shrink-0" onClick={() => setIsExplanationMinimized(!isExplanationMinimized)}>
+              <h3 className="font-semibold text-lg">AI Explanation</h3>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                {isExplanationMinimized ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </Button>
             </div>
+            
+            {!isExplanationMinimized && (
+              <div className="p-6 space-y-6 overflow-y-auto flex-1">
+                <div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {aiOutput?.explanation || "No explanation provided. Try using the AI Assistant in the Schema Builder to generate an explanation alongside your schema."}
+                  </p>
+                </div>
 
-            {aiOutput?.warnings && aiOutput.warnings.length > 0 && (
-              <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4">
-                <h3 className="font-semibold text-destructive flex items-center gap-2 mb-2">
-                  <AlertTriangle className="w-4 h-4" />
-                  Warnings ({aiOutput.warnings.length})
-                </h3>
-                <ul className="text-sm text-destructive/80 space-y-1 ml-6 list-disc">
-                  {aiOutput.warnings.map((w, i) => (
-                    <li key={i}>{w}</li>
-                  ))}
-                </ul>
+                {aiOutput?.warnings && aiOutput.warnings.length > 0 && (
+                  <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4">
+                    <h3 className="font-semibold text-destructive flex items-center gap-2 mb-2">
+                      <AlertTriangle className="w-4 h-4" />
+                      Warnings ({aiOutput.warnings.length})
+                    </h3>
+                    <ul className="text-sm text-destructive/80 space-y-1 ml-6 list-disc">
+                      {aiOutput.warnings.map((w, i) => (
+                        <li key={i}>{w}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             )}
           </div>
